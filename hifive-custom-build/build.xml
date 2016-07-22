@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="build_server_source" basedir="." default="build">
+	<description>
+		サーバのjavaのソースコードとリソースをコンパイルし、jarファイルを生成します。
+	</description>
+	<!-- 生成するjarファイル名 -->
+	<property name="build.jar.name" value="jsBuild.jar" />
+
+	<!-- jarの配置ディレクトリ -->
+	<property name="hifive.h5Tools.dir" value="${user.home}/git/hifivemain/hifive/lib/h5Tools" />
+	<property name="hifiveui.h5Tools.dir" value="${user.home}/git/hifive-ui-library/hifive-ui-library/lib/h5Tools" />
+
+	<!-- 一時ビルド先 -->
+	<property name="build.dir" value="build" />
+	<!-- 一時クラスフォルダ -->
+	<property name="build.classes.dir" value="${build.dir}/classes" />
+	<!-- ソースフォルダ -->
+	<property name="src.dir" value="src/main/java" />
+	<!-- リソースフォルダ -->
+	<property name="src.res.dir" value="src/main/resources" />
+	<!-- ライブラリプロジェクト -->
+	<property name="lib.project.dir" value="./lib" />
+	<!-- ソースコードコンバータファイルのコピー元 -->
+	<property name="converter.origin.dir" value="${lib.project.dir}/h5Tools" />
+	<!-- ソースコードコンバータファイル -->
+	<property name="converter.jar" value="h5SourceCodeConverter.jar" />
+	<!-- ソースコードコンバータファイルのコピー先 -->
+	<property name="converter.to.dir" value="${hifive.h5Tools.dir}" />
+
+	<path id="base.path">
+		<fileset dir="${lib.project.dir}" includes="**/*.jar" />
+	</path>
+
+	<target name="build" depends="end,copy" />
+
+	<target name="end" depends="jar,distribute">
+		<delete dir="${build.classes.dir}" />
+	</target>
+
+	<target name="distribute">
+		<copy file="${build.dir}/${build.jar.name}" todir="${hifive.h5Tools.dir}" />
+		<echo message="${hifive.h5Tools.dir}/${build.jar.name}に出力しました" />
+		<copy file="${build.dir}/${build.jar.name}" todir="${hifiveui.h5Tools.dir}" />
+		<echo message="${hifiveui.h5Tools.dir}/${build.jar.name}に出力しました" />
+	</target>
+
+	<target name="jar" depends="compile">
+		<jar destfile="${build.dir}/${build.jar.name}">
+			<fileset dir="${build.classes.dir}" includes="**/*.class, **/*.xml, **/*.properties , **/*.vm" />
+		</jar>
+	</target>
+
+	<target name="compile" depends="clean">
+		<javac srcdir="${src.dir}" classpathref="base.path" destdir="${build.classes.dir}" encoding="UTF-8" source="1.6" target="1.6" includeantruntime="false">
+		</javac>
+		<copy todir="${build.classes.dir}">
+			<fileset dir="${src.res.dir}">
+				<include name="**/*.vm" />
+				<include name="**/*.properties" />
+				<include name="**/*.xml" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="clean">
+		<delete dir="${build.classes.dir}">
+			<include name="**/*" />
+		</delete>
+		<delete dir="${to.lib.dir}">
+			<include name="h5SourceCodeConverter*.jar" />
+			<include name="${build.jar.name}" />
+		</delete>
+		<mkdir dir="${converter.to.dir}" />
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${build.classes.dir}" />
+	</target>
+
+	<target name="copy">
+		<!-- コンバータファイル(jar)のコピー -->
+		<copy file="${converter.origin.dir}/${converter.jar}" todir="${converter.to.dir}" />
+	</target>
+</project>

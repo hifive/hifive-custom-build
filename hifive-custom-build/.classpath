@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="src" path="src/main/resources"/>
+	<classpathentry kind="lib" path="lib/commons/commons-io-2.1.jar" sourcepath="lib/commons/sources/commons-io-2.1-sources.jar"/>
+	<classpathentry kind="lib" path="lib/commons/commons-lang-2.6.jar" sourcepath="lib/commons/sources/commons-lang-2.6-sources.jar"/>
+	<classpathentry kind="lib" path="lib/log/slf4j-api-1.6.4.jar"/>
+	<classpathentry kind="lib" path="lib/velocity/ant-1.6.jar"/>
+	<classpathentry kind="lib" path="lib/velocity/velocity-1.7.jar" sourcepath="lib/velocity/sources/velocity-1.7-sources.jar"/>
+	<classpathentry kind="lib" path="lib/commons/javax.inject-1.jar" sourcepath="lib/etc/sources/javax.inject-1-sources.jar"/>
+	<classpathentry kind="lib" path="lib/closurecompiler/args4j-2.0.26.jar"/>
+	<classpathentry kind="lib" path="lib/closurecompiler/closure-compiler-v20160619.jar"/>
+	<classpathentry kind="lib" path="lib/h5Tools/h5SourceCodeConverter.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/commons/commons-collections-3.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/rhino/rhino-1.7R4.jar"/>
+	<classpathentry kind="lib" path="lib/log/slf4j-log4j12-1.6.4.jar"/>
+	<classpathentry kind="lib" path="lib/log/log4j-1.2.16.jar"/>
+	<classpathentry kind="output" path="target"/>
+</classpath>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="archives/**|coverage/**|doc/**|recipe/fude/lib/h5/h5-1.1.4.js|recipe/jqgrid/lib/|res/**|src/|test/" kind="src" path="src/main/webapp"/>
+	<classpathentry kind="src" path="src/main/webapp/src"/>
+	<classpathentry excluding="h5version0.0.1/*|lib/qunit/qunit.js" kind="src" path="src/main/webapp/test"/>
+	<classpathentry kind="con" path="org.eclipse.wst.jsdt.launching.baseBrowserLibrary/StandardBrowser/html5"/>
+	<classpathentry kind="con" path="org.eclipse.wst.jsdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.wst.jsdt.USER_LIBRARY/hifiveLib"/>
+	<classpathentry kind="output" path=""/>
+</classpath>
