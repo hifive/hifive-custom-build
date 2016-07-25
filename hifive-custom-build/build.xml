@@ -5,7 +5,7 @@
 		サーバのjavaのソースコードとリソースをコンパイルし、jarファイルを生成します。
 	</description>
 	<!-- 生成するjarファイル名 -->
-	<property name="build.jar.name" value="jsBuild.jar" />
+	<property name="build.jar.name" value="hifive-custom-build.jar" />
 
 	<!-- 一時ビルド先 -->
 	<property name="build.dir" value="build" />
