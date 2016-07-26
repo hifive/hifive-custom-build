@@ -1,0 +1,8 @@
+/build/
+/target/
+/lib/closurecompiler/
+/lib/commons/
+/lib/ivy/
+/lib/log/
+/lib/rhino/
+/lib/velocity/
