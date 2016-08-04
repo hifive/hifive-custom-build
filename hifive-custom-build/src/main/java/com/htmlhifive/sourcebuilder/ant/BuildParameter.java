@@ -17,33 +17,47 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.tools.ant.BuildException;
 
 /**
- * <H3>
- * TODO: クラスの概要を記述.</H3>
+ * <H3>TODO: クラスの概要を記述.</H3>
  *
  * @author fukuda
  */
 public class BuildParameter {
 
-	private String jsDir = "src/main/webapp/src";
-	private String cssDir = "src/main/webapp/srcCss";
-	private String templateEngineSrcDir = "src/main/webapp/src/ejs";
-	private String dstDir = "src/main/webapp/release";
+	private String jsSrcDir = "";
+
+	private String cssSrcDir = "";
+
+	private String templateEngineSrcDir = "";
+	private String destDir = null;
+
 	private String version;
 	private String templateEngineVersion;
-	private String[] moduleNames = new String[] { "util", "controller", "data", "view", "ui", "api.geo", "api.sqldb",
-	"api.storage" };
-	private boolean tmpFiles = false;
-	private String releaseName = null;
-	private String devName = null;
-	private String cssName = null;
-	private String templateEngineName = null;
-	private String jsTemplateFile = null;
-	private String cssTemplateFile = null;
+	private String[] modules = new String[] { "scopedglobals", "util", "async", "resource", "controller", "dataModel",
+			"modelWithBinding", "view", "ui", "api.geo", "api.sqldb", "api.storage", "scene", "validation", "dev" };
 
-	private String minHeaderFile = null;
-	private String constructionFile = null;
+	private boolean tempFileFlag = false;
+	private String jsReleaseFileName = null;
+
+	private String jsDevFileName = null;
+
+	private String cssReleaseFileName = null;
+
+	private String templateEngineFileName = null;
+
+	private String jsTemplateFileName = null;
+
+	private String cssTemplateFileName = null;
+
+	private String templateEngineFile = null;
+	private String templateEngineSrcFileName = null;
+
+	private String minHeaderFileName = null;
+
+	private String constructionFileName = null;
+
 	private String configBaseDir = null;
 
 	public String getConfigBaseDir() {
@@ -56,34 +70,34 @@ public class BuildParameter {
 		this.configBaseDir = templateRootDir;
 	}
 
-	public String getConstructionFile() {
+	public String getConstructionFileName() {
 
-		return constructionFile;
+		return constructionFileName;
 	}
 
-	public void setConstructionFile(String configPath) {
+	public void setConstructionFileName(String constructionFileName) {
 
-		this.constructionFile = configPath;
+		this.constructionFileName = constructionFileName;
 	}
 
-	public void setJsTemplateFile(String srcTemplate) {
+	public String getJsTemplateFileName() {
 
-		this.jsTemplateFile = srcTemplate;
+		return jsTemplateFileName;
 	}
 
-	public void setCssTemplateFile(String cssTemplate) {
+	public void setJsTemplateFileName(String jsTemplateFileName) {
 
-		this.cssTemplateFile = cssTemplate;
+		this.jsTemplateFileName = jsTemplateFileName;
 	}
 
-	public String getJsTemplateFile() {
+	public String getCssTemplateFileName() {
 
-		return jsTemplateFile;
+		return cssTemplateFileName;
 	}
 
-	public String getCssTemplateFile() {
+	public void setCssTemplateFileName(String cssTemplateFileName) {
 
-		return cssTemplateFile;
+		this.cssTemplateFileName = cssTemplateFileName;
 	}
 
 	private final Map<String, Object> velocityParameter = new HashMap<String, Object>();
@@ -94,29 +108,29 @@ public class BuildParameter {
 		return ToStringBuilder.reflectionToString(this);
 	}
 
-	public void setModuleNames(String moduleNames) {
+	public void setModules(String modules) {
 
-		this.moduleNames = StringUtils.split(moduleNames, ",");
+		this.modules = StringUtils.split(modules, ",");
 	}
 
 	/**
-	 * JsDirを取得する.
+	 * jsSrcDirを取得する.
 	 *
-	 * @return jsDir
+	 * @return jsSrcDir
 	 */
-	public String getJsDir() {
+	public String getJsSrcDir() {
 
-		return jsDir;
+		return jsSrcDir;
 	}
 
 	/**
-	 * jsDirを設定する.
+	 * jsSrcDirを設定する.
 	 *
-	 * @param jsDir jsDir
+	 * @param jsSrcDir jsSrcDir
 	 */
-	public void setJsDir(String jsDir) {
+	public void setJsSrcDir(String jsSrcDir) {
 
-		this.jsDir = jsDir;
+		this.jsSrcDir = jsSrcDir;
 	}
 
 	/**
@@ -140,43 +154,43 @@ public class BuildParameter {
 	}
 
 	/**
-	 * cssDirを取得する.
+	 * cssSrcDirを取得する.
 	 *
 	 * @return cssSrcDir
 	 */
-	public String getCssDir() {
+	public String getCssSrcDir() {
 
-		return cssDir;
+		return cssSrcDir;
 	}
 
 	/**
 	 * cssSrcDirを設定する.
 	 *
-	 * @param cssDir cssDir
+	 * @param cssSrcDir cssSrcDir
 	 */
-	public void setCssDir(String cssDir) {
+	public void setCssSrcDir(String cssSrcDir) {
 
-		this.cssDir = cssDir;
+		this.cssSrcDir = cssSrcDir;
 	}
 
 	/**
-	 * dstDirを取得する.
+	 * destDirを取得する.
 	 *
-	 * @return dstDir
+	 * @return destDir
 	 */
-	public String getDstDir() {
+	public String getDestDir() {
 
-		return dstDir;
+		return destDir;
 	}
 
 	/**
-	 * dstDirを設定する.
+	 * destDirを設定する.
 	 *
-	 * @param dstDir dstDir
+	 * @param destDir destDir
 	 */
-	public void setDstDir(String dstDir) {
+	public void setDestDir(String destDir) {
 
-		this.dstDir = dstDir;
+		this.destDir = destDir;
 	}
 
 	/**
@@ -220,123 +234,123 @@ public class BuildParameter {
 	}
 
 	/**
-	 * moduleNamesを取得する.
+	 * modulesを取得する.
 	 *
-	 * @return moduleNames
+	 * @return modules
 	 */
-	public String[] getModuleNames() {
+	public String[] getModules() {
 
-		return moduleNames;
+		return modules;
 	}
 
 	/**
-	 * moduleNamesを設定する.
+	 * modulesを設定する.
 	 *
-	 * @param moduleNames moduleNames
+	 * @param modules modules
 	 */
-	public void setModuleNames(String[] moduleNames) {
+	public void setModules(String[] modules) {
 
-		this.moduleNames = moduleNames;
+		this.modules = modules;
 	}
 
 	/**
-	 * tmpFilesを取得する.
+	 * tempFileFlagを取得する.
 	 *
-	 * @return tmpFiles
+	 * @return tempFileFlag
 	 */
-	public boolean isTmpFiles() {
+	public boolean isTempFileFlag() {
 
-		return tmpFiles;
+		return tempFileFlag;
 	}
 
 	/**
-	 * tmpFilesを設定する.
+	 * tempFileFlagを設定する.
 	 *
-	 * @param tmpFiles tmpFiles
+	 * @param tempFileFlag tempFileFlag
 	 */
-	public void setTmpFiles(boolean tmpFiles) {
+	public void setTempFileFlag(boolean tempFileFlag) {
 
-		this.tmpFiles = tmpFiles;
+		this.tempFileFlag = tempFileFlag;
 	}
 
 	/**
-	 * releaseNameを取得する.
+	 * jsReleaseFileNameを取得する.
 	 *
-	 * @return releaseName
+	 * @return jsReleaseFileName
 	 */
-	public String getReleaseName() {
+	public String getJsReleaseFileName() {
 
-		return releaseName;
+		return jsReleaseFileName;
 	}
 
 	/**
-	 * releaseNameを設定する.
+	 * jsReleaseFileNameを設定する.
 	 *
-	 * @param releaseName releaseName
+	 * @param jsReleaseFileName jsReleaseFileName
 	 */
-	public void setReleaseName(String releaseName) {
+	public void setJsReleaseFileName(String jsReleaseFileName) {
 
-		this.releaseName = releaseName;
+		this.jsReleaseFileName = jsReleaseFileName;
 	}
 
 	/**
-	 * devNameを取得する.
+	 * jsDevFileNameを取得する.
 	 *
-	 * @return devName
+	 * @return jsDevFileName
 	 */
-	public String getDevName() {
+	public String getJsDevFileName() {
 
-		return devName;
+		return jsDevFileName;
 	}
 
 	/**
-	 * devNameを設定する.
+	 * jsDevFileNameを設定する.
 	 *
-	 * @param devName devName
+	 * @param jsDevFileName jsDevFileName
 	 */
-	public void setDevName(String devName) {
+	public void setJsDevFileName(String jsDevFileName) {
 
-		this.devName = devName;
+		this.jsDevFileName = jsDevFileName;
 	}
 
 	/**
-	 * cssNameを取得する.
+	 * cssReleaseFileNameを取得する.
 	 *
-	 * @return cssName
+	 * @return cssReleaseFileName
 	 */
-	public String getCssName() {
+	public String getCssReleaseFileName() {
 
-		return cssName;
+		return cssReleaseFileName;
 	}
 
 	/**
-	 * cssNameを設定する.
+	 * cssReleaseFileNameを設定する.
 	 *
-	 * @param cssName cssName
+	 * @param cssReleaseFileName cssReleaseFileName
 	 */
-	public void setCssName(String cssName) {
+	public void setCssReleaseFileName(String cssReleaseFileName) {
 
-		this.cssName = cssName;
+		this.cssReleaseFileName = cssReleaseFileName;
 	}
 
 	/**
-	 * templateEngineNameを取得する.
+	 * templateEngineFileNameを取得する.
 	 *
-	 * @return templateEngineName
+	 * @return templateEngineFileName
 	 */
-	public String getTemplateEngineName() {
+	public String getTemplateEngineFileName() {
 
-		return templateEngineName;
+		return templateEngineFileName;
 	}
 
 	/**
-	 * templateEngineNameを設定する.
+	 * templateEngineFileNameを設定する.
 	 *
-	 * @param templateEngineName templateEngineName
+	 * @param templateEngineFileName templateEngineFileName
 	 */
-	public void setTemplateEngineName(String templateEngineName) {
+	public void setTemplateEngineFileName(String templateEngineFileName) {
 
-		this.templateEngineName = templateEngineName;
+		this.templateEngineFileName = templateEngineFileName;
 	}
 
 	/**
@@ -349,14 +363,78 @@ public class BuildParameter {
 		return velocityParameter;
 	}
 
-	public String getMinHeaderFile() {
+	public String getMinHeaderFileName() {
 
-		return minHeaderFile;
+		return minHeaderFileName;
 	}
 
-	public void setMinHeaderFile(String minHeader) {
+	public void setMinHeaderFileName(String minHeaderFileName) {
 
-		this.minHeaderFile = minHeader;
+		this.minHeaderFileName = minHeaderFileName;
+	}
+
+	/**
+	 * 必須パラメータのチェックをする。 必須パラメータがない場合はBuildExceptionをスローする。
+	 *
+	 */
+	public void checkParam() {
+
+		String message = "";
+
+		Map<String, String> paramMap = new HashMap<String, String>();
+
+		if (jsSrcDir == null || jsSrcDir.isEmpty()) {
+			paramMap.put("jsSrcDir", "jsSrcDir");
+		}
+
+		if (cssSrcDir == null || cssSrcDir.isEmpty()) {
+			paramMap.put("cssSrcDir", "cssSrcDir");
+		}
+
+		if (templateEngineSrcDir == null || templateEngineSrcDir.isEmpty()) {
+			paramMap.put("templateEngineSrcDir", "templateEngineSrcDir");
+		}
+
+		if (constructionFileName == null || constructionFileName.isEmpty()) {
+			paramMap.put("constructionFileName", "constructionFileName");
+		}
+
+		if (paramMap.keySet().size() != 0) {
+			// 必須がない場合 必須のキーを合わせたstringを作成
+			boolean flag = true;
+
+			for (String key : paramMap.keySet()) {
+				String st = "";
+				if (!flag) {
+					st = ",";
+				} else {
+					flag = false;
+				}
+				message = message + st + key;
+			}
+
+			throw new BuildException("必須パラメータを入力してください。入力漏れパラメータ：" + message);
+		}
+	}
+
+	public String getTemplateEngineFile() {
+
+		return templateEngineFile;
+	}
+
+	public void setTemplateEngineFile(String templateEngineFile) {
+
+		this.templateEngineFile = templateEngineFile;
+	}
+
+	public String getTemplateEngineSrcFileName() {
+
+		return templateEngineSrcFileName;
+	}
+
+	public void setTemplateEngineSrcFileName(String templateEngineSrcFileName) {
+
+		this.templateEngineSrcFileName = templateEngineSrcFileName;
 	}
 
 }

@@ -18,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,6 +31,7 @@ import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.tools.ant.BuildException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,29 +73,58 @@ public class BuildRunner {
 				antVersionService.setTemplateEngineVersion(param.getTemplateEngineVersion());
 			}
 
-			String baseDir = param.getConfigBaseDir();
-			if (baseDir != null) {
-				// テンプレートファイルルートの設定
-				velocityBuildService.setLoaderPath(baseDir);
-				// module定義(construction.xml)ファイルの読み込み
-				moduleService.setConstructionPath(baseDir, param.getConstructionFile());
+			String destDir = param.getDestDir();
+			if (destDir == null || destDir.isEmpty()) {
+				// 未指定の場合、デフォルトを設定
+				destDir = SourceBuilderConstants.DEST_DIR;
+
+				File dir = new File(destDir);
+				if (!dir.exists()) {
+					// 該当ディレクトリ無い場合は作成
+					dir.mkdirs();
+				}
 			}
 
-			String[] selctedModuleNames = param.getModuleNames();
+			String baseDir = param.getConfigBaseDir();
+			if (baseDir == null || baseDir.isEmpty()) {
+				baseDir = SourceBuilderConstants.CONFIG_BASE_DIR;
+			}
+
+			// テンプレートファイルルートの設定
+			velocityBuildService.setLoaderPath(baseDir);
+			// module定義(construction.xml)ファイルの読み込み
+			moduleService.setConstructionPath(baseDir, param.getConstructionFileName());
+
+			String[] selctedModuleNames = param.getModules();
 
 			// デバッグ版の作成
 			logger.debug(ArrayUtils.toString(selctedModuleNames));
 			String[] fileNames = moduleService.getFileNames(selctedModuleNames);
-			String[] contents = moduleService.getContents(param.getJsDir(), fileNames);
+			String[] contents = moduleService.getContents(param.getJsSrcDir(), fileNames);
 			Map<String, Object> map = createCommonParamMap(selctedModuleNames, contents, param);
-			String debug = velocityBuildService.build(map, SourceBuilderConstants.TEMPLATE_H5_FILE_NAME);
-			String dstFileName = param.getDevName();
-			if (dstFileName == null) {
-				dstFileName = buildNameService.getBuildDebugFileName();
+			String jsTemplateFileName = param.getJsTemplateFileName();
+			String debug;
+			if (jsTemplateFileName != null) {
+				debug = velocityBuildService.build(map, jsTemplateFileName);
+			} else {
+				String content = "";
+				for (String content2 : contents) {
+					content = content + content2;
+				}
+				debug = createWriteString(content);
 			}
-			FileUtils.write(new File(param.getDstDir(), dstFileName), debug, SourceBuilderConstants.ENCODING);
+			String dstFileName = param.getJsDevFileName();
+			if (dstFileName == null) {
+				if (param.getVersion() == null) {
+					dstFileName = SourceBuilderConstants.BUILD_DEBUG_FILE_NAME;
+				} else {
+					dstFileName = buildNameService.getBuildDebugFileName();
+				}
+			}
+			FileUtils.write(new File(destDir, dstFileName), debug, SourceBuilderConstants.ENCODING);
+
 			// リリース版の作成
-			OutputSource source = builderService.releaseCompress(debug, param.isTmpFiles(), true, dstFileName);
+			OutputSource source = builderService.releaseCompress(debug, param.isTempFileFlag(), true, dstFileName);
 			map = new HashMap<String, Object>();
 			map.put("version", param.getVersion());
 			map.put("content", source.getSource());
@@ -102,33 +133,63 @@ public class BuildRunner {
 				map.put("moduleNames", StringUtils.join(selctedModuleNames, ','));
 			}
 			map.putAll(param.getVelocityParameter());
-			String release = velocityBuildService.build(map, SourceBuilderConstants.TEMPLATE_MIN_HEADER_FILE_NAME);
-			dstFileName = param.getReleaseName();
-			if (dstFileName == null) {
-				dstFileName = buildNameService.getBuildReleaseFileName();
+			String minHeaderFileName = param.getMinHeaderFileName();
+			String release = null;
+			if (minHeaderFileName != null) {
+				release = velocityBuildService.build(map, minHeaderFileName);
+			} else {
+				release = createWriteString(source.getSource());
 			}
-			FileUtils.write(new File(param.getDstDir(), dstFileName), release, SourceBuilderConstants.ENCODING);
+			dstFileName = param.getJsReleaseFileName();
+			if (dstFileName == null) {
+				if (param.getVersion() == null) {
+					dstFileName = SourceBuilderConstants.BUILD_JS_RELEASE_FILE_NAME;
+				} else {
+					dstFileName = buildNameService.getBuildReleaseFileName();
+				}
+			}
+			FileUtils.write(new File(destDir, dstFileName), release, SourceBuilderConstants.ENCODING);
 
 			// sourceMap出力
-			writeSourceMap(param.getDstDir(), dstFileName, source.getSourceMap());
+			writeSourceMap(destDir, dstFileName, source.getSourceMap());
 
 			// CSSの生成
 			String[] cssFileNames = moduleService.getCssFileNames(selctedModuleNames);
-			String[] cssContents = moduleService.getContents(param.getCssDir(), cssFileNames);
-			String cssDebug =
-					velocityBuildService.build(createCommonParamMap(selctedModuleNames, cssContents, param),
-							SourceBuilderConstants.TEMPLATE_H5CSS_FILE_NAME);
-			dstFileName = param.getCssName();
-			if (dstFileName == null) {
-				dstFileName = buildNameService.getBuildCssFileName();
+			String[] cssContents = moduleService.getContents(param.getCssSrcDir(), cssFileNames);
+			String cssTemplateFileName = param.getCssTemplateFileName();
+			String cssDebug;
+			if (cssTemplateFileName != null) {
+				cssDebug = velocityBuildService.build(createCommonParamMap(selctedModuleNames, cssContents, param),
+						cssTemplateFileName);
+			} else {
+				String content = "";
+				for (String content2 : cssContents) {
+					content = content + content2;
+				}
+				cssDebug = createWriteString(content);
 			}
-			FileUtils.write(new File(param.getDstDir(), dstFileName), cssDebug, SourceBuilderConstants.ENCODING);
+			dstFileName = param.getCssReleaseFileName();
+			if (dstFileName == null) {
+				if (param.getVersion() == null) {
+					dstFileName = SourceBuilderConstants.BUILD_CSS_RELEASE_FILE_NAME;
+				} else {
+					dstFileName = buildNameService.getBuildCssFileName();
+				}
+			}
+			FileUtils.write(new File(destDir, dstFileName), cssDebug, SourceBuilderConstants.ENCODING);
 
 			// テンプレートエンジンファイル(EJSライブラリのjsファイル)の生成
-			String[] ejss =
-					moduleService.getContents(param.getTemplateEngineSrcDir(), SourceBuilderConstants.TEMPLATE_ENGINE_FILES);
-			source = builderService.templateEngineCompress(ejss[0], param.isTmpFiles(),
-					SourceBuilderConstants.TEMPLATE_ENGINE_FILES[0]);
+			String templateEngineSrcFileName = param.getTemplateEngineSrcFileName();
+			if (templateEngineSrcFileName == null) {
+				templateEngineSrcFileName = SourceBuilderConstants.TEMPLATE_ENGINE_FILE;
+			}
+			String[] ejsSrcArray = new String[] { templateEngineSrcFileName };
+
+			String[] ejsContents = moduleService.getContents(param.getTemplateEngineSrcDir(), ejsSrcArray);
+
+			// ejsContentsは一つだが配列のため1つ目を固定で渡す。
+			source = builderService.templateEngineCompress(ejsContents[0], param.isTempFileFlag(),
+					templateEngineSrcFileName);
 			map = new HashMap<String, Object>();
 			map.put("version", param.getTemplateEngineVersion());
 			map.put("content", source.getSource());
@@ -137,17 +198,49 @@ public class BuildRunner {
 				map.put("moduleNames", StringUtils.join(selctedModuleNames, ','));
 			}
 			map.putAll(param.getVelocityParameter());
-			String ejs = velocityBuildService.build(map, SourceBuilderConstants.TEMPLATE_TEMPLATE_ENGINE_HEADER_FILE_NAME);
-			dstFileName = param.getTemplateEngineName();
+			String templateEngineFile = param.getTemplateEngineFile();
+			String ejs;
+			if (templateEngineFile != null) {
+				ejs = velocityBuildService.build(map, templateEngineFile);
+			} else {
+				ejs = createWriteString(source.getSource());
+			}
+			dstFileName = param.getTemplateEngineFileName();
 			if (dstFileName == null) {
-				dstFileName = buildNameService.getBuildEjsFileName();
+				if (param.getVersion() == null) {
+					dstFileName = SourceBuilderConstants.BUILD_TEMPLATE_ENGINE_FILE_NAME;
+				} else {
+					dstFileName = buildNameService.getBuildEjsFileName();
+				}
 			}
 
-			FileUtils.write(new File(param.getDstDir(), dstFileName), ejs, SourceBuilderConstants.ENCODING);
+			FileUtils.write(new File(destDir, dstFileName), ejs, SourceBuilderConstants.ENCODING);
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new BuildException(e);
 		}
+	}
+
+	private String createWriteString(String source) {
+
+		StringWriter sw = new StringWriter();
+		BufferedWriter bw = new BufferedWriter(sw);
+		try {
+			bw.write(source);
+			bw.flush();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (null != bw) {
+				try {
+					bw.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return sw.toString();
 	}
 
 	private void writeSourceMap(String dstDir, String dstFileName, SourceMap sourceMap) {
@@ -155,7 +248,8 @@ public class BuildRunner {
 		File file = new File(dstDir, dstFileName + SourceBuilderConstants.EXT_SOURCE_MAP);
 		BufferedWriter bw = null;
 		try {
-			bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), SourceBuilderConstants.ENCODING));
+			bw = new BufferedWriter(
+					new OutputStreamWriter(new FileOutputStream(file), SourceBuilderConstants.ENCODING));
 			sourceMap.appendTo(bw, dstFileName);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -171,7 +265,8 @@ public class BuildRunner {
 		}
 	}
 
-	private Map<String, Object> createCommonParamMap(String[] moduleNames, String[] contents, BuildParameter parameter) {
+	private Map<String, Object> createCommonParamMap(String[] moduleNames, String[] contents,
+			BuildParameter parameter) {
 
 		moduleNames = moduleService.getSortedModuleNames(moduleNames);
 		List<String> files = new ArrayList<String>();

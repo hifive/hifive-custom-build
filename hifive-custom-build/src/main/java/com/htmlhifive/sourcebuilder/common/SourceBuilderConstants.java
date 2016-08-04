@@ -25,39 +25,34 @@ public final class SourceBuilderConstants {
 
 	public static final String REMOVE_COMMENT_END = "/* del end */";
 
-	public static final String FILE_RESOURCE_LOADER_PATH = "FILE.resource.loader.path";
+	public static final String BUILD_SOURCE_MAP_DUMMY_PATH = "./dummy.map";
 
-	public static final String TEMPLATE_H5_FILE_NAME = "template/h5.vm";
-
-	public static final String TEMPLATE_MIN_HEADER_FILE_NAME = "template/min-header.vm";
-
-	public static final String TEMPLATE_TEMPLATE_ENGINE_HEADER_FILE_NAME = "template/ejs-header.vm";
-
-	public static final String TEMPLATE_H5CSS_FILE_NAME = "template/h5css.vm";
-
-	public static final String CONFIG_FILE = "h5-file-construction.xml";
-
-	public static final String[] TEMPLATE_ENGINE_FILES = new String[] { "ejs-1.0.js" };
+	public static final String EXT_SOURCE_MAP = ".map";
 
 	public static final String VERSION = "${version}";
 
-	public static final String BUILD_DEBUG_FILE_NAME = "h5" + VERSION + ".dev.js";
+	public static final String BUILD_TEMPLATE_ENGINE_FILE_NAME = "build-template-engine.js";
+	public static final String BUILD_VERSION_TEMPLATE_ENGINE_FILE_NAME = "build-" + VERSION + "-template-engine.js";
 
-	public static final String BUILD_DEBUG_CSS_FILE_NAME = "h5" + VERSION + ".css";
+	public static final String BUILD_CSS_RELEASE_FILE_NAME = "build.css";
+	public static final String BUILD_VERSION_CSS_RELEASE_FILE_NAME = "build_" + VERSION + ".css";
 
-	public static final String BUILD_RELEASE_FILE_NAME = "h5" + VERSION + ".js";
+	public static final String BUILD_JS_RELEASE_FILE_NAME = "build.min.js";
+	public static final String BUILD_VERSION_JS_RELEASE_FILE_NAME = "build_" + VERSION + "_min.js";
 
-	public static final String BUILD_TEMPLATE_ENGINE_FILE_NAME = "ejs" + VERSION + ".h5mod.js";
+	public static final String BUILD_DEBUG_FILE_NAME = "build.dev.js";
+	public static final String BUILD_VERSION_DEBUG_FILE_NAME = "build_" + VERSION + "_dev.js";
 
-	public static final String BUILD_SOURCE_MAP_FILE_NAME = BUILD_RELEASE_FILE_NAME + ".map";
+	public static final String DEST_DIR = "./build";
 
-	public static final String BUILD_SOURCE_MAP_DUMMY_PATH = "./dummy.map";
+	public static final String CONFIG_BASE_DIR = "./";
 
-	public static final String BUILDE_CONTEXT_PATH = "classpath:spring/build-context.xml";
+	// No19 addVersionToFileName (追加)
+	public static final Boolean ADD_VERSION_TO_FILE_NAME = true;
 
-	public static final String GENERIC_BUILDE_CONTEXT_PATH = "classpath:spring/generic-build-context.xml";
+	public static final String TEMPLATE_ENGINE_FILE = "ejs-1.0.js";
 
-	public static final String EXT_SOURCE_MAP = ".map";
+	public static final String BUILD_SOURCE_MAP_FILE_NAME = BUILD_VERSION_JS_RELEASE_FILE_NAME + ".map";
 
 	private SourceBuilderConstants() {
 

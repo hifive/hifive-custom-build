@@ -18,6 +18,7 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.AntClassLoader;
+import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Parameter;
 
@@ -38,7 +39,7 @@ public class BuilderServiceTask extends Task {
 
 	public void setTemplateEngineName(String templateEngineName) {
 
-		param.setTemplateEngineName(templateEngineName);
+		param.setTemplateEngineFileName(templateEngineName);
 	}
 
 	@Override
@@ -49,6 +50,40 @@ public class BuilderServiceTask extends Task {
 			((AntClassLoader) loader).setThreadContextLoader();
 		}
 
+	}
+
+	@Override
+	public void execute() {
+
+		try {
+			createBuildRunner();
+
+			if (buildRunner != null) {
+				buildRunner.execute(param);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new BuildException(e.getMessage());
+		}
+
+	}
+
+	public void addConfiguredVelocityParameter(Parameter parameter) {
+
+		param.getVelocityParameter().put(parameter.getName(), StringUtils.trim(parameter.getValue()));
+	}
+
+	public void addConfiguredBuildParameter(BuildParameter buildParameter) {
+
+		this.param = buildParameter;
+	}
+
+	private void createBuildRunner() throws IOException, H5FileIOException {
+
+		// ant build時の必須パラメータのチェック
+		param.checkParam();
+
+		ClassLoader loader = this.getClass().getClassLoader();
 		buildRunner = new BuildRunner();
 
 		// 各サービスを設定
@@ -59,31 +94,22 @@ public class BuilderServiceTask extends Task {
 		InputStream inStream = null;
 		inStream = loader.getResourceAsStream("env.properties");
 		Properties envProperties = new Properties();
-		try {
-			envProperties.load(inStream);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 
+		envProperties.load(inStream);
+
+		moduleService.setBuildParameter(param);
 		moduleService.setProperties(envProperties);
 		moduleService.setVersionService(antVersionService);
 
 		// moduleServiceのコンフィグ読み込み
-		try {
-			moduleService.refreshConfig();
-		} catch (H5FileIOException e) {
-			e.printStackTrace();
-		}
+		moduleService.refreshConfig();
 
 		VelocityBuildService velocityBuildService = new VelocityBuildService();
 		// velocityProperties
 		inStream = loader.getResourceAsStream("velocity.properties");
 		Properties velocityProperties = new Properties();
-		try {
-			velocityProperties.load(inStream);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		velocityProperties.load(inStream);
+
 		velocityBuildService.setProperties(velocityProperties);
 
 		ContentCleanService contentCleanService = new ContentCleanService();
@@ -111,24 +137,4 @@ public class BuilderServiceTask extends Task {
 		buildRunner.setBuildNameService(buildNameService);
 
 	}
-
-	@Override
-	public void execute() {
-
-		if (buildRunner != null) {
-
-			buildRunner.execute(param);
-		}
-	}
-
-	public void addConfiguredVelocityParameter(Parameter parameter) {
-
-		param.getVelocityParameter().put(parameter.getName(), StringUtils.trim(parameter.getValue()));
-	}
-
-	public void addConfiguredBuildParameter(BuildParameter buildParameter) {
-
-		this.param = buildParameter;
-	}
-
 }

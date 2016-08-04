@@ -31,7 +31,9 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.tools.ant.BuildException;
 
+import com.htmlhifive.sourcebuilder.ant.BuildParameter;
 import com.htmlhifive.sourcebuilder.common.SourceBuilderConstants;
 import com.htmlhifive.sourcebuilder.exception.H5FileIOException;
 import com.htmlhifive.sourcebuilder.model.Dependencies;
@@ -41,8 +43,7 @@ import com.htmlhifive.sourcebuilder.model.H5FileConstruction;
 import com.htmlhifive.sourcebuilder.model.Module;
 
 /**
- * <H3>
- * Moduleやコンテンツの取得をするサービスクラス</H3>
+ * <H3>Moduleやコンテンツの取得をするサービスクラス</H3>
  *
  * @author
  */
@@ -58,6 +59,8 @@ public class ModuleService {
 	@Inject
 	@Named("envProperties")
 	private Properties properties;
+
+	private BuildParameter param = new BuildParameter();
 
 	/**
 	 * H5ファイル構成情報.
@@ -107,10 +110,11 @@ public class ModuleService {
 	 */
 	public H5FileConstruction readConfig() throws JAXBException, H5FileIOException {
 
+		String configurationBase = properties.getProperty("h5.file.configuration.base");
+		String configurationFileName = properties.getProperty("h5.file.configuration.path");
+
 		try {
 			InputStream is = null;
-			String configurationBase = properties.getProperty("h5.file.configuration.base");
-			String configurationFileName = properties.getProperty("h5.file.configuration.path");
 			if (configurationFileName != null) {
 				String configurationPath = configurationFileName;
 				if (configurationBase != null) {
@@ -122,7 +126,7 @@ public class ModuleService {
 				is = new FileInputStream(new File(configurationPath));
 
 			} else {
-				is = this.getClass().getClassLoader().getResourceAsStream(SourceBuilderConstants.CONFIG_FILE);
+				is = this.getClass().getClassLoader().getResourceAsStream(createConstructionFile());
 			}
 			JAXBContext jc = JAXBContext.newInstance(H5FileConstruction.class);
 			Unmarshaller um = jc.createUnmarshaller();
@@ -133,8 +137,66 @@ public class ModuleService {
 		} catch (JAXBException e) {
 			throw e;
 		} catch (IOException e) {
-			throw new H5FileIOException("モジュール定義ファイルにアクセスできませんでした");
+
+			if (configurationFileName == null) {
+				configurationFileName = getBaseDir() + "/" + getConstructionFile();
+			}
+			String canonicalPath = getCanonicalPath(configurationFileName);
+
+			throw new H5FileIOException(
+					"モジュール定義ファイルにアクセスできませんでした。construction file: " + canonicalPath + " is not found");
+		} catch (BuildException e) {
+			throw e;
 		}
+	}
+
+	private String getCanonicalPath(String configurationFileName) {
+
+		File file = new File(configurationFileName);
+
+		String path = null;
+		try {
+			path = file.getCanonicalPath();
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new BuildException(e.getMessage());
+		}
+		return path;
+	}
+
+	private String getBaseDir() {
+
+		String baseDir = param.getConfigBaseDir();
+		if (baseDir == null || baseDir.isEmpty()) {
+			baseDir = SourceBuilderConstants.CONFIG_BASE_DIR;
+		}
+
+		return baseDir;
+	}
+
+	private String getConstructionFile() {
+
+		String constructionFile = param.getConstructionFileName();
+		if (constructionFile == null || constructionFile.isEmpty()) {
+			throw new BuildException("必須パラメータを入力してください。入力漏れパラメータ：constructionFile");
+		}
+		return constructionFile;
+	}
+
+	private String createConstructionFile() throws IOException, H5FileIOException {
+
+		String constructionFile = getConstructionFile();
+		String baseDir = getBaseDir();
+
+		String configurationFileName = baseDir + "/" + constructionFile;
+		String path = getCanonicalPath(configurationFileName);
+		File file = new File(configurationFileName);
+		if (!file.exists()) {
+
+			throw new H5FileIOException("モジュール定義ファイルにアクセスできませんでした。construction file: " + path + " is not found");
+		}
+
+		return constructionFile;
 	}
 
 	/**
@@ -348,6 +410,11 @@ public class ModuleService {
 	public void setVersionService(VersionService versionService) {
 
 		this.versionService = versionService;
+	}
+
+	public void setBuildParameter(BuildParameter param) {
+
+		this.param = param;
 	}
 
 }

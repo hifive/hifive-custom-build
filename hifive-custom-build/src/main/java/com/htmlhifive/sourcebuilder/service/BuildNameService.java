@@ -24,23 +24,26 @@ public class BuildNameService {
 
 	public String getBuildCssFileName() throws H5FileIOException {
 
-		return getBuildFileName(SourceBuilderConstants.BUILD_DEBUG_CSS_FILE_NAME, versionService.getCurrentVersion());
+		return getBuildFileName(SourceBuilderConstants.BUILD_VERSION_CSS_RELEASE_FILE_NAME,
+				versionService.getCurrentVersion());
 	}
 
 	public String getBuildEjsFileName() {
 
-		return getBuildFileName(SourceBuilderConstants.BUILD_TEMPLATE_ENGINE_FILE_NAME,
+		return getBuildFileName(SourceBuilderConstants.BUILD_VERSION_TEMPLATE_ENGINE_FILE_NAME,
 				versionService.getTemplateEngineVersion());
 	}
 
 	public String getBuildDebugFileName() throws H5FileIOException {
 
-		return getBuildFileName(SourceBuilderConstants.BUILD_DEBUG_FILE_NAME, versionService.getCurrentVersion());
+		return getBuildFileName(SourceBuilderConstants.BUILD_VERSION_DEBUG_FILE_NAME,
+				versionService.getCurrentVersion());
 	}
 
 	public String getBuildReleaseFileName() throws H5FileIOException {
 
-		return getBuildFileName(SourceBuilderConstants.BUILD_RELEASE_FILE_NAME, versionService.getCurrentVersion());
+		return getBuildFileName(SourceBuilderConstants.BUILD_VERSION_JS_RELEASE_FILE_NAME,
+				versionService.getCurrentVersion());
 	}
 
 	public String getBuildFileName(String base, String version) {
@@ -48,7 +51,7 @@ public class BuildNameService {
 		if (null == version) {
 			return base.replace(SourceBuilderConstants.VERSION, "");
 		}
-		return base.replace(SourceBuilderConstants.VERSION, "-" + version);
+		return base.replace(SourceBuilderConstants.VERSION, version);
 	}
 
 	public void setVersionService(VersionService versionService) {
